@@ -1,1057 +1,818 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#3730a3" />
-  <title>Gestor Fácil - ERP & NF-e (Câmera Barcode + IBS/CBS)</title>
+  <meta name="theme-color" content="#1e1b4b" />
+  <title>Gestor Pro ERP & NF-e (IBS/CBS)</title>
   <script src="https://tailwindcss.com"></script>
   <script src="https://cloudflare.com"></script>
   <script src="https://unpkg.com"></script>
-  <!-- Biblioteca gratuita para leitura de código de barras via câmera -->
   <script src="https://unpkg.com"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col md:flex-row">
 
-  <!-- MODAL DA CÂMERA (LEITOR DE CÓDIGO DE BARRAS) -->
-  <div id="modal-scanner" class="hidden fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center p-4">
-    <div class="bg-white rounded-2xl p-4 w-full max-w-md space-y-3 shadow-2xl">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-slate-800 flex items-center gap-2">
-          <i data-lucide="scan-barcode" class="w-5 h-5 text-indigo-600"></i> Aponte para o Código de Barras
+  <!-- MODAL DO LEITOR DE CÓDIGO DE BARRAS (CÂMERA) -->
+  <div id="modal-scanner" class="hidden fixed inset-0 bg-slate-900/90 z-50 flex flex-col items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 w-full max-w-md space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-slate-800 flex items-center gap-2 text-lg">
+          <i data-lucide="scan-barcode" class="w-6 h-6 text-amber-500"></i> Leitor de Código de Barras
         </h3>
-        <button onclick="fecharScanner()" class="text-slate-500 hover:text-rose-600 font-bold text-lg px-2">✕</button>
+        <button onclick="fecharScanner()" class="bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 rounded-full w-8 h-8 font-bold">✕</button>
       </div>
-      <div id="leitor-camera-box" class="w-full rounded-xl overflow-hidden bg-black min-h-[250px]"></div>
-      <p class="text-xs text-center text-slate-500">Posicione o código de barras dentro da área iluminada.</p>
-      <button onclick="fecharScanner()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2.5 rounded-xl">
-        Cancelar / Fechar Câmera
+      <div id="leitor-camera-box" class="w-full rounded-2xl overflow-hidden bg-black min-h-[260px]"></div>
+      <p class="text-xs text-center text-slate-500">Aponte a câmera traseira para o código de barras do produto.</p>
+      <button onclick="fecharScanner()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 rounded-xl">
+        Fechar Câmera
       </button>
     </div>
   </div>
 
-  <!-- MENU LATERAL (PC) / INFERIOR (CELULAR) -->
-  <nav class="bg-indigo-900 text-white md:w-64 w-full fixed md:static bottom-0 z-40 flex md:flex-col justify-around md:justify-start p-2 md:p-4 shadow-lg">
-    <div class="hidden md:flex items-center gap-2 mb-8 px-2 pt-2">
-      <i data-lucide="layers" class="w-8 h-8 text-indigo-300"></i>
+  <!-- BARRA LATERAL (PC) / MENU INFERIOR (CELULAR ANDROID) -->
+  <nav class="bg-indigo-950 text-white md:w-64 w-full fixed md:static bottom-0 z-40 flex md:flex-col justify-around md:justify-start p-1.5 md:p-4 shadow-2xl overflow-x-auto">
+    <div class="hidden md:flex items-center gap-3 mb-8 px-2 pt-2">
+      <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg">
+        <i data-lucide="cpu" class="w-7 h-7 text-white"></i>
+      </div>
       <div>
-        <h1 class="font-bold text-lg leading-tight">Gestor Fácil</h1>
-        <span class="text-xs text-indigo-300">ERP • Barcode & IBS/CBS</span>
+        <h1 class="font-extrabold text-lg tracking-tight">Gestor Pro</h1>
+        <span class="text-xs text-indigo-300 font-medium">ERP & NF-e 2026</span>
       </div>
     </div>
 
-    <button onclick="mudarAba('dashboard')" id="nav-dashboard" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl bg-indigo-700 text-white transition">
-      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-      <span class="text-xs md:text-sm font-medium">Início</span>
+    <button onclick="mudarAba('dashboard')" id="nav-dashboard" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl bg-indigo-600 text-white font-semibold transition">
+      <i data-lucide="layout-grid" class="w-5 h-5 text-indigo-200"></i>
+      <span class="text-[11px] md:text-sm">Início</span>
     </button>
 
-    <button onclick="mudarAba('nfe')" id="nav-nfe" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-800 text-indigo-200 transition md:mt-1">
-      <i data-lucide="file-text" class="w-5 h-5"></i>
-      <span class="text-xs md:text-sm font-medium">Emitir NF-e</span>
+    <button onclick="mudarAba('nfe')" id="nav-nfe" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-900 text-indigo-200 transition md:mt-1">
+      <i data-lucide="file-check-2" class="w-5 h-5 text-sky-400"></i>
+      <span class="text-[11px] md:text-sm">Emitir NF-e</span>
     </button>
 
-    <button onclick="mudarAba('clientes')" id="nav-clientes" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-800 text-indigo-200 transition md:mt-1">
-      <i data-lucide="users" class="w-5 h-5"></i>
-      <span class="text-xs md:text-sm font-medium">Clientes</span>
+    <button onclick="mudarAba('clientes')" id="nav-clientes" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-900 text-indigo-200 transition md:mt-1">
+      <i data-lucide="users" class="w-5 h-5 text-cyan-400"></i>
+      <span class="text-[11px] md:text-sm">Clientes</span>
     </button>
 
-    <button onclick="mudarAba('estoque')" id="nav-estoque" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-800 text-indigo-200 transition md:mt-1">
-      <i data-lucide="package" class="w-5 h-5"></i>
-      <span class="text-xs md:text-sm font-medium">Produtos</span>
+    <button onclick="mudarAba('estoque')" id="nav-estoque" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-900 text-indigo-200 transition md:mt-1">
+      <i data-lucide="package-search" class="w-5 h-5 text-amber-400"></i>
+      <span class="text-[11px] md:text-sm">Estoque</span>
     </button>
 
-    <button onclick="mudarAba('financeiro')" id="nav-financeiro" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-800 text-indigo-200 transition md:mt-1">
-      <i data-lucide="dollar-sign" class="w-5 h-5"></i>
-      <span class="text-xs md:text-sm font-medium">Financeiro</span>
+    <button onclick="mudarAba('receber')" id="nav-receber" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-900 text-indigo-200 transition md:mt-1">
+      <i data-lucide="arrow-up-circle" class="w-5 h-5 text-emerald-400"></i>
+      <span class="text-[11px] md:text-sm">A Receber</span>
     </button>
 
-    <button onclick="mudarAba('config')" id="nav-config" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-800 text-indigo-200 transition md:mt-1">
-      <i data-lucide="settings" class="w-5 h-5"></i>
-      <span class="text-xs md:text-sm font-medium">Ajustes</span>
+    <button onclick="mudarAba('pagar')" id="nav-pagar" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-900 text-indigo-200 transition md:mt-1">
+      <i data-lucide="arrow-down-circle" class="w-5 h-5 text-rose-400"></i>
+      <span class="text-[11px] md:text-sm">A Pagar</span>
+    </button>
+
+    <button onclick="mudarAba('config')" id="nav-config" class="nav-btn flex flex-col md:flex-row items-center gap-1 md:gap-3 p-2 md:px-4 md:py-3 rounded-xl hover:bg-indigo-900 text-indigo-200 transition md:mt-1">
+      <i data-lucide="sliders" class="w-5 h-5 text-purple-400"></i>
+      <span class="text-[11px] md:text-sm">Ajustes</span>
     </button>
   </nav>
 
-  <!-- ÁREA PRINCIPAL -->
-  <main class="flex-1 p-4 md:p-8 pb-24 md:pb-8 max-w-6xl mx-auto w-full">
-    <div id="toast" class="hidden fixed top-5 right-5 z-50 px-5 py-3 rounded-xl text-white font-semibold shadow-xl transition"></div>
+  <!-- ÁREA DE CONTEÚDO -->
+  <main class="flex-1 p-4 md:p-8 pb-28 md:pb-8 max-w-6xl mx-auto w-full">
+    <div id="toast" class="hidden fixed top-5 right-5 z-50 px-5 py-3.5 rounded-2xl text-white font-semibold shadow-2xl transition"></div>
 
     <!-- ===================================================================== -->
-    <!-- ABA 1: DASHBOARD                                                      -->
+    <!-- ABA 1: PAINEL INICIAL (DASHBOARD COLORIDO)                            -->
     <!-- ===================================================================== -->
     <section id="aba-dashboard" class="aba-conteudo space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <h2 class="text-2xl font-bold text-slate-800">Visão Geral do Negócio</h2>
-        <span id="badge-regime" class="text-xs font-bold px-3 py-1.5 rounded-full bg-indigo-100 text-indigo-800 self-start"></span>
+      <div class="bg-gradient-to-r from-indigo-700 to-blue-600 rounded-3xl p-6 text-white shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 class="text-2xl font-extrabold" id="dash-empresa-nome">Painel de Controle</h2>
+          <p class="text-indigo-100 text-sm mt-1" id="badge-regime">Carregando regime tributário...</p>
+        </div>
+        <button onclick="mudarAba('nfe')" class="bg-white text-indigo-700 hover:bg-indigo-50 px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow">
+          <i data-lucide="plus-circle" class="w-5 h-5"></i> Nova Nota Fiscal
+        </button>
       </div>
-      
+
+      <!-- CARTÕES DE INDICADORES -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <div class="flex items-center justify-between text-emerald-600 mb-2">
-            <span class="text-sm font-medium text-slate-500">Contas a Receber</span>
-            <i data-lucide="trending-up" class="w-5 h-5"></i>
+        <div onclick="mudarAba('receber')" class="cursor-pointer bg-white p-5 rounded-2xl shadow-sm border-l-4 border-emerald-500 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase text-slate-400">A Receber (Pendente)</span>
+            <div class="bg-emerald-100 p-2 rounded-lg text-emerald-600"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
           </div>
-          <p id="kpi-receber" class="text-2xl font-bold text-emerald-600">R\$ 0,00</p>
+          <p id="kpi-receber" class="text-2xl font-extrabold text-emerald-600">R$ 0,00</p>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <div class="flex items-center justify-between text-rose-600 mb-2">
-            <span class="text-sm font-medium text-slate-500">Contas a Pagar</span>
-            <i data-lucide="trending-down" class="w-5 h-5"></i>
+        <div onclick="mudarAba('pagar')" class="cursor-pointer bg-white p-5 rounded-2xl shadow-sm border-l-4 border-rose-500 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase text-slate-400">A Pagar (Pendente)</span>
+            <div class="bg-rose-100 p-2 rounded-lg text-rose-600"><i data-lucide="trending-down" class="w-5 h-5"></i></div>
           </div>
-          <p id="kpi-pagar" class="text-2xl font-bold text-rose-600">R\$ 0,00</p>
+          <p id="kpi-pagar" class="text-2xl font-extrabold text-rose-600">R$ 0,00</p>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <div class="flex items-center justify-between text-indigo-600 mb-2">
-            <span class="text-sm font-medium text-slate-500">Clientes</span>
-            <i data-lucide="users" class="w-5 h-5"></i>
+        <div onclick="mudarAba('clientes')" class="cursor-pointer bg-white p-5 rounded-2xl shadow-sm border-l-4 border-cyan-500 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase text-slate-400">Clientes</span>
+            <div class="bg-cyan-100 p-2 rounded-lg text-cyan-600"><i data-lucide="users" class="w-5 h-5"></i></div>
           </div>
-          <p id="kpi-clientes" class="text-2xl font-bold text-slate-800">0</p>
+          <p id="kpi-clientes" class="text-2xl font-extrabold text-slate-800">0</p>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <div class="flex items-center justify-between text-amber-600 mb-2">
-            <span class="text-sm font-medium text-slate-500">Produtos</span>
-            <i data-lucide="package" class="w-5 h-5"></i>
+        <div onclick="mudarAba('estoque')" class="cursor-pointer bg-white p-5 rounded-2xl shadow-sm border-l-4 border-amber-500 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase text-slate-400">Produtos Ativos</span>
+            <div class="bg-amber-100 p-2 rounded-lg text-amber-600"><i data-lucide="package" class="w-5 h-5"></i></div>
           </div>
-          <p id="kpi-produtos" class="text-2xl font-bold text-slate-800">0</p>
+          <p id="kpi-produtos" class="text-2xl font-extrabold text-slate-800">0</p>
         </div>
       </div>
 
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <h3 class="font-bold text-lg mb-4">O que você deseja fazer agora?</h3>
-        <div class="flex flex-wrap gap-3">
-          <button onclick="mudarAba('nfe')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-medium flex items-center gap-2 shadow-sm">
-            <i data-lucide="file-plus" class="w-5 h-5"></i> Emitir Nova Nota Fiscal
+      <!-- MENU DE ATALHOS COM ÍCONES GRANDES -->
+      <div>
+        <h3 class="text-sm font-bold uppercase text-slate-500 mb-3">Acesso Rápido por Módulo</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <button onclick="mudarAba('nfe')" class="bg-white hover:bg-sky-50 border border-slate-200 p-4 rounded-2xl flex flex-col items-center gap-2 text-center shadow-sm transition">
+            <div class="bg-sky-100 text-sky-600 p-3 rounded-xl"><i data-lucide="file-text" class="w-6 h-6"></i></div>
+            <span class="text-xs font-bold text-slate-700">Emitir NF-e</span>
           </button>
-          <button onclick="mudarAba('clientes')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-5 py-3 rounded-xl font-medium flex items-center gap-2">
-            <i data-lucide="user-plus" class="w-5 h-5"></i> Cadastrar Cliente
+
+          <button onclick="mudarAba('clientes')" class="bg-white hover:bg-cyan-50 border border-slate-200 p-4 rounded-2xl flex flex-col items-center gap-2 text-center shadow-sm transition">
+            <div class="bg-cyan-100 text-cyan-600 p-3 rounded-xl"><i data-lucide="user-plus" class="w-6 h-6"></i></div>
+            <span class="text-xs font-bold text-slate-700">Clientes</span>
           </button>
-          <button onclick="mudarAba('estoque')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-5 py-3 rounded-xl font-medium flex items-center gap-2">
-            <i data-lucide="plus-square" class="w-5 h-5"></i> Cadastrar Produto
+
+          <button onclick="mudarAba('estoque')" class="bg-white hover:bg-amber-50 border border-slate-200 p-4 rounded-2xl flex flex-col items-center gap-2 text-center shadow-sm transition">
+            <div class="bg-amber-100 text-amber-600 p-3 rounded-xl"><i data-lucide="package-plus" class="w-6 h-6"></i></div>
+            <span class="text-xs font-bold text-slate-700">Estoque</span>
           </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===================================================================== -->
-    <!-- ABA 2: EMISSÃO DE NOTA FISCAL (COM LEITOR DE CÓDIGO DE BARRAS)        -->
-    <!-- ===================================================================== -->
-    <section id="aba-nfe" class="aba-conteudo hidden space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <h2 class="text-2xl font-bold text-slate-800">Emitir Nota Fiscal Eletrônica (NF-e)</h2>
-        <button onclick="abrirScanner('VENDA')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm self-start">
-          <i data-lucide="scan-barcode" class="w-5 h-5"></i> Bipar Produto (Câmera)
-        </button>
-      </div>
-
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="md:col-span-2">
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">1. Destinatário (Cliente) *</label>
-            <select id="nfe-cliente" class="w-full border border-slate-300 rounded-xl p-3 bg-white"></select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Natureza da Operação / CFOP</label>
-            <select id="nfe-cfop" class="w-full border border-slate-300 rounded-xl p-3 bg-white">
-              <option value="5102">5102 - Venda Mercadoria (Dentro do Estado)</option>
-              <option value="6102">6102 - Venda Mercadoria (Fora do Estado)</option>
-              <option value="5405">5405 - Venda Mercadoria com ST</option>
-              <option value="5101">5101 - Venda Produção Própria</option>
-              <option value="5949">5949 - Outra Saída / Remessa</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-          <div class="flex justify-between items-center">
-            <label class="block text-xs font-bold uppercase text-slate-600">2. Adicionar Produtos à Nota</label>
-            <span class="text-xs text-slate-500">Selecione na lista ou use a câmera</span>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-            <div class="md:col-span-6">
-              <select id="nfe-produto" class="w-full border border-slate-300 rounded-xl p-3 bg-white"></select>
-            </div>
-            <div class="md:col-span-2">
-              <input type="number" id="nfe-qtd" value="1" min="1" placeholder="Qtd" class="w-full border border-slate-300 rounded-xl p-3" />
-            </div>
-            <div class="md:col-span-2">
-              <input type="number" id="nfe-desc-item" value="0" min="0" step="0.01" placeholder="Desc. R$" title="Desconto neste item (R\$)" class="w-full border border-slate-300 rounded-xl p-3" />
-            </div>
-            <div class="md:col-span-2">
-              <button onclick="adicionarItemNota()" class="w-full h-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl py-3 px-4 flex items-center justify-center gap-1">
-                <i data-lucide="plus" class="w-4 h-4"></i> Incluir
-              </button>
-            </div>
-          </div>
-
-          <div id="nfe-carrinho-lista" class="space-y-2 pt-2"></div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label class="block text-xs font-medium text-slate-500 mb-1">Valor Frete (R\$)</label>
-            <input type="number" id="nfe-frete" value="0" min="0" step="0.01" oninput="recalcularTotaisNota()" class="w-full border border-slate-300 rounded-xl p-2.5" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-500 mb-1">Modalidade Frete</label>
-            <select id="nfe-mod-frete" class="w-full border border-slate-300 rounded-xl p-2.5 bg-white">
-              <option value="9">9 - Sem Frete</option>
-              <option value="0">0 - Por conta do Emitente (CIF)</option>
-              <option value="1">1 - Por conta do Destinatário (FOB)</option>
-            </select>
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-xs font-medium text-slate-500 mb-1">Observações / Informações Adicionais (Opcional)</label>
-            <input type="text" id="nfe-obs" placeholder="Ex: Pedido #45, Chave Pix, Dados de entrega..." class="w-full border border-slate-300 rounded-xl p-2.5" />
-          </div>
-        </div>
-
-        <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-4 grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
-          <div>
-            <span class="text-slate-500 block">ICMS Destacado</span>
-            <strong id="prev-icms" class="text-slate-800 text-sm">R\$ 0,00</strong>
-          </div>
-          <div>
-            <span class="text-slate-500 block" id="lbl-pis">PIS</span>
-            <strong id="prev-pis" class="text-slate-800 text-sm">R\$ 0,00</strong>
-          </div>
-          <div>
-            <span class="text-slate-500 block" id="lbl-cofins">COFINS</span>
-            <strong id="prev-cofins" class="text-slate-800 text-sm">R\$ 0,00</strong>
-          </div>
-          <div>
-            <span class="text-slate-500 block">CBS (0,90% Teste)</span>
-            <strong id="prev-cbs" class="text-indigo-700 text-sm">R\$ 0,00</strong>
-          </div>
-          <div>
-            <span class="text-slate-500 block">IBS (0,10% Teste)</span>
-            <strong id="prev-ibs" class="text-indigo-700 text-sm">R\$ 0,00</strong>
-          </div>
-        </div>
-
-        <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div class="text-2xl font-bold text-indigo-800" id="nfe-total-preview">Total da NF-e: R\$ 0,00</div>
-          <button onclick="emitirNFe()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-7 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-md">
-            <i data-lucide="check-circle" class="w-5 h-5"></i> Transmitir NF-e & Gerar DANFE PDF
-          </button>
-        </div>
-      </div>
-
-      <h3 class="text-lg font-bold text-slate-800">Notas Fiscais Emitidas</h3>
-      <div id="lista-notas" class="space-y-3"></div>
-    </section>
-
-    <!-- ===================================================================== -->
-    <!-- ABA 3: CLIENTES (COM BUSCA AUTOMÁTICA DE CNPJ, CPF E CEP)             -->
-    <!-- ===================================================================== -->
-    <section id="aba-clientes" class="aba-conteudo hidden space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <h2 class="text-2xl font-bold text-slate-800">Cadastro de Clientes</h2>
-        <span class="text-xs text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-full font-medium">
-          Digite o CNPJ ou CEP para preencher automaticamente
-        </span>
-      </div>
-
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <div class="md:col-span-4">
-            <label class="block text-xs font-bold text-slate-500 mb-1">CPF ou CNPJ *</label>
-            <div class="flex gap-2">
-              <input type="text" id="cli-doc" onblur="consultarDocumentoCliente()" placeholder="Digite apenas números" class="w-full border border-slate-300 rounded-xl p-3" />
-              <button type="button" onclick="consultarDocumentoCliente()" title="Consultar CNPJ / Validar CPF" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3.5 rounded-xl flex items-center justify-center">
-                <i data-lucide="search" class="w-5 h-5"></i>
-              </button>
-            </div>
-            <span id="status-doc-cli" class="text-xs mt-1 block"></span>
-          </div>
-
-          <div class="md:col-span-8">
-            <label class="block text-xs font-bold text-slate-500 mb-1">Nome Completo ou Razão Social *</label>
-            <input type="text" id="cli-nome" placeholder="Preenchido automaticamente no CNPJ" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div class="md:col-span-4">
-            <label class="block text-xs font-medium text-slate-500 mb-1">Indicador IE (SEFAZ)</label>
-            <select id="cli-ind-ie" class="w-full border border-slate-300 rounded-xl p-3 bg-white text-sm">
-              <option value="9">9 - Não Contribuinte ICMS (CPF / Isento)</option>
-              <option value="1">1 - Contribuinte ICMS (Possui IE)</option>
-              <option value="2">2 - Contribuinte Isento de IE</option>
-            </select>
-          </div>
-
-          <div class="md:col-span-4">
-            <label class="block text-xs font-medium text-slate-500 mb-1">Inscrição Estadual (IE)</label>
-            <input type="text" id="cli-ie" placeholder="Opcional" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div class="md:col-span-4">
-            <label class="block text-xs font-medium text-slate-500 mb-1">WhatsApp / Telefone</label>
-            <input type="text" id="cli-tel" placeholder="(00) 00000-0000" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div class="md:col-span-3">
-            <label class="block text-xs font-bold text-slate-500 mb-1">CEP (Busca Automática)</label>
-            <div class="flex gap-2">
-              <input type="text" id="cli-cep" onblur="consultarCEPCliente()" placeholder="00000-000" maxlength="9" class="w-full border border-slate-300 rounded-xl p-3" />
-              <button type="button" onclick="consultarCEPCliente()" title="Buscar Endereço pelo CEP" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 rounded-xl">
-                <i data-lucide="map-pin" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="md:col-span-5">
-            <label class="block text-xs font-medium text-slate-500 mb-1">Rua / Logradouro</label>
-            <input type="text" id="cli-rua" placeholder="Preenchido pelo CEP" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-xs font-medium text-slate-500 mb-1">Número</label>
-            <input type="text" id="cli-num" placeholder="Nº" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-xs font-medium text-slate-500 mb-1">Bairro</label>
-            <input type="text" id="cli-bairro" placeholder="Bairro" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div class="md:col-span-5">
-            <label class="block text-xs font-medium text-slate-500 mb-1">Cidade</label>
-            <input type="text" id="cli-cidade" placeholder="Cidade" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-xs font-medium text-slate-500 mb-1">UF</label>
-            <input type="text" id="cli-uf" placeholder="UF" maxlength="2" class="w-full border border-slate-300 rounded-xl p-3 uppercase" />
-          </div>
-
-          <div class="md:col-span-5 flex items-end">
-            <button onclick="salvarCliente()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
-              <i data-lucide="save" class="w-5 h-5"></i> Salvar Cliente
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div id="lista-clientes" class="space-y-3"></div>
-    </section>
-    
-    <!-- ===================================================================== -->
-    <!-- ABA 4: PRODUTOS (COM LEITOR DE CÓDIGO DE BARRAS PARA CADASTRO)        -->
-    <!-- ===================================================================== -->
-    <section id="aba-estoque" class="aba-conteudo hidden space-y-6">
-      <h2 class="text-2xl font-bold text-slate-800">Produtos e Tributação Padrão</h2>
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1">Código de Barras (EAN / GTIN)</label>
-            <div class="flex gap-2">
-              <input type="text" id="prod-ean" placeholder="Escaneie com a câmera ou digite" class="w-full border border-slate-300 rounded-xl p-3" />
-              <button type="button" onclick="abrirScanner('CADASTRO')" title="Ler Código de Barras com a Câmera" class="bg-amber-500 hover:bg-amber-600 text-white px-4 rounded-xl flex items-center gap-1 font-semibold">
-                <i data-lucide="scan-barcode" class="w-5 h-5"></i> Ler
-              </button>
-            </div>
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1">Descrição do Produto *</label>
-            <input type="text" id="prod-desc" placeholder="Nome do produto" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">NCM (8 dígitos) *</label>
-            <input type="text" id="prod-ncm" placeholder="Ex: 84716052" maxlength="8" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">CEST (7 dígitos - se ST)</label>
-            <input type="text" id="prod-cest" placeholder="Opcional" maxlength="7" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
           
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Origem da Mercadoria</label>
-            <select id="prod-origem" class="w-full border border-slate-300 rounded-xl p-3 bg-white text-sm">
-              <option value="0">0 - Nacional</option>
-              <option value="1">1 - Estrangeira (Importação Direta)</option>
-              <option value="2">2 - Estrangeira (Adquirida no Mercado Interno)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Situação Tributária ICMS</label>
-            <select id="prod-cst-icms" class="w-full border border-slate-300 rounded-xl p-3 bg-white text-sm">
-              <option value="00">00 - Tributada Integralmente</option>
-              <option value="20">20 - Com Redução de Base de Cálculo</option>
-              <option value="40">40 - Isenta</option>
-              <option value="41">41 - Não Tributada</option>
-              <option value="60">60 - Cobrada Anteriormente por ST</option>
-              <option value="102">102 - Simples Nacional (Sem Permissão Crédito)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Alíquota ICMS (%)</label>
-            <input type="number" id="prod-aliq-icms" value="18" step="0.01" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">CST PIS / COFINS</label>
-            <select id="prod-cst-pis" class="w-full border border-slate-300 rounded-xl p-3 bg-white text-sm">
-              <option value="01">01 - Tributável com Alíquota Básica</option>
-              <option value="04">04 - Tributação Monofásica (Revenda Alíq. Zero)</option>
-              <option value="06">06 - Operação Tributável à Alíquota Zero</option>
-              <option value="08">08 - Operação sem Incidência</option>
-              <option value="49">49 - Outras Operações (Simples Nacional)</option>
-            </select>
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1">Reforma Tributária (CST IBS/CBS + cClassTrib)</label>
-            <select id="prod-ibscbs-combo" class="w-full border border-slate-300 rounded-xl p-3 bg-white text-sm">
-              <option value="000|000001">CST 000 / cClassTrib 000001 - Tributação Integral Padrão (1%)</option>
-              <option value="200|200001">CST 200 / cClassTrib 200001 - Alíquota Zero (Cesta Básica / Saúde)</option>
-              <option value="400|400001">CST 400 / cClassTrib 400001 - Isenção Legal</option>
-              <option value="410|410001">CST 410 / cClassTrib 410001 - Imunidade / Não Incidência</option>
-              <option value="620|620001">CST 620 / cClassTrib 620001 - Tributação Monofásica</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Preço de Venda (R\$) *</label>
-            <input type="number" id="prod-preco" step="0.01" placeholder="0,00" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Estoque Inicial *</label>
-            <input type="number" id="prod-qtd" placeholder="0" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-        </div>
-        <button onclick="salvarProduto()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
-          <i data-lucide="plus" class="w-5 h-5"></i> Cadastrar Produto
-        </button>
-      </div>
-      <div id="lista-produtos" class="space-y-3"></div>
-    </section>
-
-    <!-- ===================================================================== -->
-    <!-- ABA 5: FINANCEIRO                                                     -->
-    <!-- ===================================================================== -->
-    <section id="aba-financeiro" class="aba-conteudo hidden space-y-6">
-      <h2 class="text-2xl font-bold text-slate-800">Contas a Pagar e Receber</h2>
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <select id="fin-tipo" class="border border-slate-300 rounded-xl p-3 bg-white">
-            <option value="RECEBER">Conta a Receber (+)</option>
-            <option value="PAGAR">Conta a Pagar (-)</option>
-          </select>
-          <input type="text" id="fin-desc" placeholder="Descrição da Conta *" class="md:col-span-2 border border-slate-300 rounded-xl p-3" />
-          <input type="number" id="fin-valor" step="0.01" placeholder="Valor (R\$) *" class="border border-slate-300 rounded-xl p-3" />
-          <input type="date" id="fin-venc" class="border border-slate-300 rounded-xl p-3" />
-        </div>
-        <button onclick="salvarConta()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
-          <i data-lucide="dollar-sign" class="w-5 h-5"></i> Lançar no Financeiro
-        </button>
-      </div>
-      <div id="lista-financeiro" class="space-y-3"></div>
-    </section>
-
-    <!-- ===================================================================== -->
-    <!-- ABA 6: CONFIGURAÇÕES                                                  -->
-    <!-- ===================================================================== -->
-    <section id="aba-config" class="aba-conteudo hidden space-y-6">
-      <h2 class="text-2xl font-bold text-slate-800">Configurações da Empresa & Regime Tributário</h2>
-
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <h3 class="font-bold text-lg">Dados do Emitente & Enquadramento Tributário</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="flex gap-2">
-            <input type="text" id="cfg-cnpj" onblur="consultarCNPJEmitente()" placeholder="Seu CNPJ (Busca automática)" class="w-full border border-slate-300 rounded-xl p-3" />
-            <button type="button" onclick="consultarCNPJEmitente()" title="Consultar meu CNPJ" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 rounded-xl">
-              <i data-lucide="search" class="w-5 h-5"></i>
-            </button>
-          </div>
-          <input type="text" id="cfg-razao" placeholder="Razão Social da Sua Empresa" class="border border-slate-300 rounded-xl p-3" />
-          <input type="text" id="cfg-ie" placeholder="Inscrição Estadual" class="border border-slate-300 rounded-xl p-3" />
-          <div>
-            <select id="cfg-regime" class="w-full border border-slate-300 rounded-xl p-3 bg-white font-medium">
-              <option value="PRESUMIDO">Lucro Presumido (CRT 3 • PIS 0,65% • COFINS 3,00% • IBS/CBS 1%)</option>
-              <option value="REAL">Lucro Real (CRT 3 • PIS 1,65% • COFINS 7,60% • IBS/CBS 1%)</option>
-              <option value="SIMPLES">Simples Nacional / MEI (CRT 1 • Dispensa IBS/CBS em 2026)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Certificado Digital A1 (.pfx)</label>
-            <input type="file" id="cfg-cert-arquivo" accept=".pfx,.p12" class="w-full text-sm border border-slate-300 rounded-xl p-2" />
-          </div>
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Senha do Certificado</label>
-            <input type="password" id="cfg-cert-senha" placeholder="••••••" class="w-full border border-slate-300 rounded-xl p-3" />
-          </div>
-        </div>
-        <button onclick="salvarConfig()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold">
-          Salvar Configurações Fiscais
-        </button>
-      </div>
-
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <h3 class="font-bold text-lg">Sincronizar Banco de Dados (PC ↔ Android)</h3>
-        <div class="flex flex-wrap gap-3">
-          <button onclick="exportarBackup()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-3 rounded-xl font-medium flex items-center gap-2">
-            <i data-lucide="download" class="w-5 h-5"></i> Baixar Backup (.JSON)
-          </button>
-          <label class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 px-5 py-3 rounded-xl font-medium flex items-center gap-2 cursor-pointer">
-            <i data-lucide="upload" class="w-5 h-5"></i> Importar Backup
-            <input type="file" accept=".json" onchange="importarBackup(event)" class="hidden" />
-          </label>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <script>
-    lucide.createIcons();
-
-    let db = JSON.parse(localStorage.getItem('gestor_facil_erp_v5')) || {
-      config: { razao: 'MINHA EMPRESA LTDA', cnpj: '00.000.000/0001-91', ie: 'ISENTO', regime: 'PRESUMIDO', certNome: '' },
-      clientes:,
-      produtos:,
-      financeiro:,
-      notas:
-    };
-
-    let carrinhoNFe =;
-    let html5QrCode = null;
-    let modoScannerAtual = 'CADASTRO';
-
-    function salvarDB() {
-      localStorage.setItem('gestor_facil_erp_v5', JSON.stringify(db));
-      renderizarTudo();
-    }
-
-    function mostrarToast(msg, erro = false) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = `fixed top-5 right-5 z-50 px-5 py-3 rounded-xl text-white font-semibold shadow-xl \${erro ? 'bg-rose-600' : 'bg-emerald-600'}`;
-      t.classList.remove('hidden');
-      setTimeout(() => t.classList.add('hidden'), 3500);
-    }
-
-    function mudarAba(nome) {
-      document.querySelectorAll('.aba-conteudo').forEach(el => el.classList.add('hidden'));
-      document.getElementById('aba-' + nome).classList.remove('hidden');
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('bg-indigo-700', 'text-white');
-        btn.classList.add('text-indigo-200');
-      });
-      const ativo = document.getElementById('nav-' + nome);
-      ativo.classList.add('bg-indigo-700', 'text-white');
-      ativo.classList.remove('text-indigo-200');
-    }
-
-    // =========================================================================
-    // LEITOR DE CÓDIGO DE BARRAS COM A CÂMERA DO CELULAR / WEBCAM
-    // =========================================================================
-    function abrirScanner(modo) {
-      modoScannerAtual = modo;
-      document.getElementById('modal-scanner').classList.remove('hidden');
-
-      html5QrCode = new Html5Qrcode("leitor-camera-box");
-      const config = { fps: 10, qrbox: { width: 250, height: 140 } };
-
-      // Prioriza a câmera traseira do celular (environment)
-      html5QrCode.start({ facingMode: "environment" }, config, (codigoLido) => {
-        // Toca um bipe curto de confirmação
-        try {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          osc.type = "sine";
-          osc.frequency.setValueAtTime(880, ctx.currentTime);
-          osc.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.12);
-        } catch {}
-
-        fecharScanner();
-
-        if (modoScannerAtual === 'CADASTRO') {
-          document.getElementById('prod-ean').value = codigoLido;
-          mostrarToast(`Código lido: \${codigoLido}`);
-        } else if (modoScannerAtual === 'VENDA') {
-          const prodEncontrado = db.produtos.find(p => p.ean === codigoLido);
-          if (!prodEncontrado) {
-            mostrarToast(`Produto com código \${codigoLido} não encontrado no estoque!`, true);
-            return;
-          }
-          // Se o produto já estiver no carrinho da nota, soma +1 na quantidade
-          const itemExistente = carrinhoNFe.find(i => i.produto.id === prodEncontrado.id);
-          if (itemExistente) {
-            if (prodEncontrado.estoque < itemExistente.qtd + 1) {
-              return mostrarToast(`Estoque insuficiente para \({prodEncontrado.desc}!`, true);
-            }
-            itemExistente.qtd += 1;
-            itemExistente.subtotal = +(itemExistente.produto.preco * itemExistente.qtd - itemExistente.desconto).toFixed(2);
-            itemExistente.trib = calcularImpostosItem(itemExistente.produto, itemExistente.subtotal);
-            recalcularTotaisNota();
-            mostrarToast(`+1 \){prodEncontrado.desc} adicionado na nota!`);
-          } else {
-            document.getElementById('nfe-produto').value = prodEncontrado.id;
-            document.getElementById('nfe-qtd').value = '1';
-            adicionarItemNota();
-            mostrarToast(`\${prodEncontrado.desc} incluído na nota!`);
-          }
-        }
-      }).catch(err => {
-        fecharScanner();
-        mostrarToast("Permita o acesso à câmera nas configurações do navegador.", true);
-      });
-    }
-
-    function fecharScanner() {
-      document.getElementById('modal-scanner').classList.add('hidden');
-      if (html5QrCode) {
-        html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
-        html5QrCode = null;
-      }
-    }
-
-    // =========================================================================
-    // VALIDAÇÃO CPF & CONSULTAS AUTOMÁTICAS CNPJ E CEP
-    // =========================================================================
-    function validarCPFMatematico(cpf) {
-      cpf = cpf.replace(/\D/g, '');
-      if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
-      let soma = 0, resto;
-      for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
-      resto = (soma * 10) % 11;
-      if (resto === 10 || resto === 11) resto = 0;
-      if (resto !== parseInt(cpf.substring(9, 10))) return false;
-      soma = 0;
-      for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
-      resto = (soma * 10) % 11;
-      if (resto === 10 || resto === 11) resto = 0;
-      return resto === parseInt(cpf.substring(10, 11));
-    }
-
-    async function consultarDocumentoCliente() {
-      const input = document.getElementById('cli-doc');
-      const status = document.getElementById('status-doc-cli');
-      const docLimpo = input.value.replace(/\D/g, '');
-
-      if (!docLimpo) { status.textContent = ''; return; }
-
-      if (docLimpo.length === 11) {
-        if (validarCPFMatematico(docLimpo)) {
-          input.value = docLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-          status.textContent = '✓ CPF Válido (Consumidor Final)';
-          status.className = 'text-xs mt-1 block text-emerald-600 font-semibold';
-          document.getElementById('cli-ind-ie').value = '9';
-        } else {
-          status.textContent = '✕ CPF Inválido!';
-          status.className = 'text-xs mt-1 block text-rose-600 font-semibold';
-          mostrarToast('O CPF digitado é inválido!', true);
-        }
-        return;
-      }
-
-      if (docLimpo.length === 14) {
-        input.value = docLimpo.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-        status.textContent = 'Buscando dados do CNPJ na Receita...';
-        status.className = 'text-xs mt-1 block text-indigo-600 font-semibold';
-
-        try {
-          const resp = await fetch(`https://brasilapi.com.br{docLimpo}`);
-          if (!resp.ok) throw new Error();
-          const dados = await resp.json();
-
-          document.getElementById('cli-nome').value = dados.razao_social || dados.nome_fantasia || '';
-          document.getElementById('cli-tel').value = dados.ddd_telefone_1 || '';
-          document.getElementById('cli-cep').value = dados.cep || '';
-          document.getElementById('cli-rua').value = dados.logradouro || '';
-          document.getElementById('cli-num').value = dados.numero || '';
-          document.getElementById('cli-bairro').value = dados.bairro || '';
-          document.getElementById('cli-cidade').value = dados.municipio || '';
-          document.getElementById('cli-uf').value = dados.uf || '';
-          document.getElementById('cli-ind-ie').value = '1';
-
-          status.textContent = `✓ CNPJ Ativo (\${dados.descricao_situacao_cadastral || 'OK'})`;
-          status.className = 'text-xs mt-1 block text-emerald-600 font-semibold';
-          mostrarToast('Dados da empresa preenchidos automaticamente!');
-        } catch {
-          status.textContent = '✕ CNPJ não encontrado.';
-          status.className = 'text-xs mt-1 block text-rose-600 font-semibold';
-          mostrarToast('Não foi possível consultar este CNPJ.', true);
-        }
-        return;
-      }
-
-      status.textContent = 'Digite 11 dígitos (CPF) ou 14 (CNPJ).';
-      status.className = 'text-xs mt-1 block text-amber-600';
-    }
-
-    async function consultarCEPCliente() {
-      const cepInput = document.getElementById('cli-cep');
-      const cepLimpo = cepInput.value.replace(/\D/g, '');
-      if (cepLimpo.length !== 8) return;
-
-      cepInput.value = cepLimpo.replace(/(\d{5})(\d{3})/, '$1-$2');
-      try {
-        const resp = await fetch(`https://viacep.com.br{cepLimpo}/json/`);
-        const dados = await resp.json();
-        if (dados.erro) return mostrarToast('CEP não encontrado!', true);
-
-        document.getElementById('cli-rua').value = dados.logradouro || '';
-        document.getElementById('cli-bairro').value = dados.bairro || '';
-        document.getElementById('cli-cidade').value = dados.localidade || '';
-        document.getElementById('cli-uf').value = dados.uf || '';
-        document.getElementById('cli-num').focus();
-        mostrarToast('Endereço preenchido pelo CEP!');
-      } catch {
-        mostrarToast('Erro ao consultar o CEP.', true);
-      }
-    }
-
-    async function consultarCNPJEmitente() {
-      const cnpjLimpo = document.getElementById('cfg-cnpj').value.replace(/\D/g, '');
-      if (cnpjLimpo.length !== 14) return mostrarToast('Digite um CNPJ válido com 14 números.', true);
-      try {
-        const resp = await fetch(`https://brasilapi.com.br{cnpjLimpo}`);
-        if (!resp.ok) throw new Error();
-        const dados = await resp.json();
-        document.getElementById('cfg-cnpj').value = cnpjLimpo.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-        document.getElementById('cfg-razao').value = dados.razao_social || '';
-        mostrarToast('Dados da sua empresa encontrados!');
-      } catch {
-        mostrarToast('CNPJ não encontrado.', true);
-      }
-    }
-
-    // CLIENTES
-    function salvarCliente() {
-      const nome = document.getElementById('cli-nome').value.trim();
-      const doc = document.getElementById('cli-doc').value.trim();
-      if (!nome || !doc) return mostrarToast('Preencha Nome e CPF/CNPJ!', true);
-
-      const rua = document.getElementById('cli-rua').value.trim();
-      const num = document.getElementById('cli-num').value.trim();
-      const bairro = document.getElementById('cli-bairro').value.trim();
-
-      db.clientes.push({
-        id: Date.now().toString(),
-        nome,
-        doc,
-        indIE: document.getElementById('cli-ind-ie').value,
-        ie: document.getElementById('cli-ie').value.trim(),
-        tel: document.getElementById('cli-tel').value.trim(),
-        cep: document.getElementById('cli-cep').value.trim(),
-        end: [rua, num, bairro].filter(Boolean).join(', '),
-        cidade: document.getElementById('cli-cidade').value.trim(),
-        uf: document.getElementById('cli-uf').value.trim().toUpperCase()
-      });
-      
-      ['cli-nome', 'cli-doc', 'cli-ie', 'cli-tel', 'cli-cep', 'cli-rua', 'cli-num', 'cli-bairro', 'cli-cidade', 'cli-uf'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('status-doc-cli').textContent = '';
-      salvarDB();
-      mostrarToast('Cliente cadastrado com sucesso!');
-    }
-
-    // PRODUTOS
-    function salvarProduto() {
-      const ean = document.getElementById('prod-ean').value.trim();
-      const desc = document.getElementById('prod-desc').value.trim();
-      const ncm = document.getElementById('prod-ncm').value.trim();
-      const preco = parseFloat(document.getElementById('prod-preco').value);
-      const qtd = parseInt(document.getElementById('prod-qtd').value);
-      if (!desc || !ncm || isNaN(preco) || isNaN(qtd)) return mostrarToast('Preencha descrição, NCM, preço e estoque!', true);
-
-      const [cstIbs, cClassTrib] = document.getElementById('prod-ibscbs-combo').value.split('|');
-
-      db.produtos.push({
-        id: Date.now().toString(),
-        ean: ean || 'SEM GTIN',
-        desc,
-        ncm,
-        cest: document.getElementById('prod-cest').value.trim(),
-        origem: document.getElementById('prod-origem').value,
-        cstIcms: document.getElementById('prod-cst-icms').value,
-        aliqIcms: parseFloat(document.getElementById('prod-aliq-icms').value) || 0,
-        cstPis: document.getElementById('prod-cst-pis').value,
-        cstIbs,
-        cClassTrib,
-        preco,
-        estoque: qtd
-      });
-
-      ['prod-ean', 'prod-desc', 'prod-ncm', 'prod-cest', 'prod-preco', 'prod-qtd'].forEach(id => document.getElementById(id).value = '');
-      salvarDB();
-      mostrarToast('Produto cadastrado com tributação!');
-    }
-
-    // FINANCEIRO
-    function salvarConta() {
-      const tipo = document.getElementById('fin-tipo').value;
-      const desc = document.getElementById('fin-desc').value.trim();
-      const valor = parseFloat(document.getElementById('fin-valor').value);
-      const venc = document.getElementById('fin-venc').value || new Date().toISOString().split('T');
-      if (!desc || isNaN(valor)) return mostrarToast('Preencha descrição e valor!', true);
-
-      db.financeiro.push({ id: Date.now().toString(), tipo, desc, valor, venc, status: 'PENDENTE' });
-      ['fin-desc', 'fin-valor', 'fin-venc'].forEach(id => document.getElementById(id).value = '');
-      salvarDB();
-      mostrarToast('Conta lançada!');
-    }
-
-    function baixarConta(id) {
-      const item = db.financeiro.find(f => f.id === id);
-      if (item) item.status = 'PAGO';
-      salvarDB();
-      mostrarToast('Conta marcada como PAGA!');
-    }
-
-    // MOTOR TRIBUTÁRIO COMPLETO
-    function calcularImpostosItem(produto, valorLiquidoItem) {
-      const regime = db.config.regime;
-
-      let vICMS = 0;
-      if (regime !== 'SIMPLES' && ['00', '20'].includes(produto.cstIcms)) {
-        vICMS = +(valorLiquidoItem * (produto.aliqIcms / 100)).toFixed(2);
-      }
-
-      let pPIS = 0, pCOFINS = 0, vPIS = 0, vCOFINS = 0;
-      if (regime !== 'SIMPLES' && produto.cstPis === '01') {
-        if (regime === 'REAL') {
-          pPIS = 1.65;
-          pCOFINS = 7.60;
-        } else if (regime === 'PRESUMIDO') {
-          pPIS = 0.65;
-          pCOFINS = 3.00;
-        }
-        vPIS = +(valorLiquidoItem * (pPIS / 100)).toFixed(2);
-        vCOFINS = +(valorLiquidoItem * (pCOFINS / 100)).toFixed(2);
-      }
-
-      let pCBS = 0, vCBS = 0, pIBS = 0, vIBS = 0;
-      if (regime !== 'SIMPLES' && produto.cstIbs === '000') {
-        pCBS = 0.90;
-        pIBS = 0.10;
-        vCBS = +(valorLiquidoItem * (pCBS / 100)).toFixed(2);
-        vIBS = +(valorLiquidoItem * (pIBS / 100)).toFixed(2);
-      }
-
-      return { vICMS, pPIS, vPIS, pCOFINS, vCOFINS, pCBS, vCBS, pIBS, vIBS };
-    }
-
-    function adicionarItemNota() {
-      const prodId = document.getElementById('nfe-produto').value;
-      const qtd = parseInt(document.getElementById('nfe-qtd').value) || 0;
-      const desconto = parseFloat(document.getElementById('nfe-desc-item').value) || 0;
-      const prod = db.produtos.find(p => p.id === prodId);
-
-      if (!prod) return mostrarToast('Cadastre um produto primeiro!', true);
-      if (qtd <= 0) return mostrarToast('Quantidade inválida!', true);
-      if (prod.estoque < qtd) return mostrarToast(`Estoque insuficiente! Disponível: \${prod.estoque}`, true);
-
-      const subtotal = +(prod.preco * qtd - desconto).toFixed(2);
-      if (subtotal <= 0) return mostrarToast('Desconto maior que o valor do item!', true);
-
-      const trib = calcularImpostosItem(prod, subtotal);
-      carrinhoNFe.push({ produto: { ...prod }, qtd, desconto, subtotal, trib });
-
-      document.getElementById('nfe-qtd').value = '1';
-      document.getElementById('nfe-desc-item').value = '0';
-      recalcularTotaisNota();
-    }
-
-    function removerItemNota(idx) {
-      carrinhoNFe.splice(idx, 1);
-      recalcularTotaisNota();
-    }
-
-    function recalcularTotaisNota() {
-      const frete = parseFloat(document.getElementById('nfe-frete').value) || 0;
-      let totalProdutos = 0, totICMS = 0, totPIS = 0, totCOFINS = 0, totCBS = 0, totIBS = 0;
-
-      document.getElementById('nfe-carrinho-lista').innerHTML = carrinhoNFe.map((item, idx) => {
-        totalProdutos += item.subtotal;
-        totICMS += item.trib.vICMS;
-        totPIS += item.trib.vPIS;
-        totCOFINS += item.trib.vCOFINS;
-        totCBS += item.trib.vCBS;
-        totIBS += item.trib.vIBS;
-
-        return `
-          <div class="bg-white p-3 rounded-lg border border-slate-200 flex justify-between items-center text-sm">
-            <div>
-              <strong>\({item.qtd}x\){item.produto.desc}</strong>
-              <span class="text-xs text-slate-500 block">EAN: \({item.produto.ean} • NCM: \){item.produto.ncm} • CST ICMS: \({item.produto.cstIcms} • IBS/CBS: \){item.produto.cstIbs}</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <strong class="text-slate-800">R\$ \${item.subtotal.toFixed(2)}</strong>
-              <button onclick="removerItemNota(\${idx})" class="text-rose-600 hover:text-rose-800 font-bold px-2">✕</button>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      const totalNota = +(totalProdutos + frete).toFixed(2);
-
-      document.getElementById('lbl-pis').textContent = db.config.regime === 'REAL' ? 'PIS (1,65%)' : db.config.regime === 'PRESUMIDO' ? 'PIS (0,65%)' : 'PIS';
-      document.getElementById('lbl-cofins').textContent = db.config.regime === 'REAL' ? 'COFINS (7,60%)' : db.config.regime === 'PRESUMIDO' ? 'COFINS (3,00%)' : 'COFINS';
-
-      document.getElementById('prev-icms').textContent = `R\$ \${totICMS.toFixed(2).replace('.', ',')}`;
-      document.getElementById('prev-pis').textContent = `R\$ \${totPIS.toFixed(2).replace('.', ',')}`;
-      document.getElementById('prev-cofins').textContent = `R\$ \${totCOFINS.toFixed(2).replace('.', ',')}`;
-      document.getElementById('prev-cbs').textContent = `R\$ \${totCBS.toFixed(2).replace('.', ',')}`;
-      document.getElementById('prev-ibs').textContent = `R\$ \${totIBS.toFixed(2).replace('.', ',')}`;
-      document.getElementById('nfe-total-preview').textContent = `Total da NF-e: R\$ \({totalNota.toFixed(2).replace('.', ',')}`;
-
-      return { totalProdutos, frete, totalNota, totICMS, totPIS, totCOFINS, totCBS, totIBS };
-    }
-
-    function emitirNFe() {
-      const cliId = document.getElementById('nfe-cliente').value;
-      const cliente = db.clientes.find(c => c.id === cliId);
-      if (!cliente) return mostrarToast('Selecione um cliente!', true);
-      if (carrinhoNFe.length === 0) return mostrarToast('Inclua pelo menos 1 produto na nota!', true);
-
-      const totais = recalcularTotaisNota();
-      const numero = Math.floor(1000 + Math.random() * 9000);
-      const chave = '352611' + Array.from({ length: 38 }, () => Math.floor(Math.random() * 10)).join('');
-      const dataEmissao = new Date().toLocaleString('pt-BR');
-      const cfop = document.getElementById('nfe-cfop').value;
-      const modFrete = document.getElementById('nfe-mod-frete').value;
-      const obs = document.getElementById('nfe-obs').value.trim();
-
-      carrinhoNFe.forEach(item => {
-        const prodOriginal = db.produtos.find(p => p.id === item.produto.id);
-        if (prodOriginal) prodOriginal.estoque -= item.qtd;
-      });
-
-      db.financeiro.push({
-        id: Date.now().toString(),
-        tipo: 'RECEBER',
-        desc: `NF-e #\){numero} - \({cliente.nome}`,
-        valor: totais.totalNota,
-        venc: new Date().toISOString().split('T'),
-        status: 'PENDENTE'
-      });
-
-      const notaObj = {
-        numero, chave, cliente, itens: [...carrinhoNFe], totais,
-        cfop, modFrete, obs, regime: db.config.regime, dataEmissao
-      };
-      db.notas.unshift(notaObj);
-
-      carrinhoNFe =;
-      document.getElementById('nfe-frete').value = '0';
-      document.getElementById('nfe-obs').value = '';
-      salvarDB();
-      gerarPDFDanfe(notaObj);
-      mostrarToast(`NF-e #\){numero} emitida com sucesso!`);
-    }
-
-    function baixarXMLNFe(nota) {
-      const crt = nota.regime === 'SIMPLES' ? '1' : '3';
-      const docDestLimpo = nota.cliente.doc.replace(/\D/g, '');
-      const tagDocDest = docDestLimpo.length === 11 ? `<CPF>\({docDestLimpo}</CPF>` : `<CNPJ>\){docDestLimpo}</CNPJ>`;
-
-      const itensXML = nota.itens.map((it, idx) => `
-      <det nItem="\${idx + 1}">
-        <prod>
-          <cProd>\${it.produto.id}</cProd>
-          <cEAN>\${it.produto.ean}</cEAN>
-          <xProd>\${it.produto.desc}</xProd>
-          <NCM>\({it.produto.ncm}</NCM>\){it.produto.cest ? `<CEST>${it.produto.cest}</CEST>` : ''}
-          <CFOP>\${nota.cfop}</CFOP>
-          <uCom>UN</uCom>
-          <qCom>\${it.qtd.toFixed(4)}</qCom>
-          <vUnCom>\${it.produto.preco.toFixed(2)}</vUnCom>
-          <vProd>\${(it.produto.preco * it.qtd).toFixed(2)}
-${it.desconto > 0 ? <vDesc>${it.desconto.toFixed(2)}</vDesc> : ''}
-`).join('');
-const xml = `<?xml version="1.0" encoding="UTF-8"?>
-`;
+Contas Receber
+
+Contas Pagar
+
+Certificado & Fiscal
+
+
+
+
+Emissão de Nota Fiscal (NF-e)
+Cálculo automático de ICMS, PIS, COFINS e Reforma Tributária (IBS/CBS)
+
+
+
+ Bipar Código (Câmera)
+
+1. Destinatário (Cliente) *
+Operação / CFOP
+5102 - Venda Dentro do Estado
+6102 - Venda Fora do Estado
+5405 - Venda Mercadoria ST
+5101 - Venda Produção Própria
+
+
+1. Incluir Produtos na Nota
+ Adicionar
+
+
+Frete (R$)
+Modalidade Frete
+9 - Sem Frete
+0 - Por conta Emitente
+1 - Por conta Destinatário
+
+
+Observações / Dados Adicionais
+ICMS
+R$ 0,00
+
+
+PIS
+R$ 0,00
+
+
+COFINS
+R$ 0,00
+
+
+CBS (0,90%)
+R$ 0,00
+
+
+IBS (0,10%)
+R$ 0,00
+
+Total da NF-e: R$ 0,00
+
+ Emitir NF-e & Baixar PDF
+
+
+ Histórico de Notas Emitidas
+
+
+
+Cadastro de Clientes
+Digite o CNPJ ou CEP e clique na lupa para preencher automaticamente
+
+CPF ou CNPJ *
+
+
+
+
+Nome Completo ou Razão Social *
+Tipo Contribuinte ICMS
+9 - Não Contribuinte (CPF / Consumidor)
+1 - Contribuinte ICMS (Empresa com IE)
+2 - Contribuinte Isento de IE
+
+Inscrição Estadual (IE)
+Telefone / WhatsApp
+CEP
+
+
+
+Rua / Logradouro
+Número
+Bairro
+Cidade
+UF
+ Salvar Cliente
+
+
+
+
+
+Produtos e Estoque
+Cadastre itens com leitor de código de barras e tributação padrão
+
+Código de Barras (EAN)
+ Ler
+
+
+Nome / Descrição do Produto *
+NCM (8 dígitos) *
+Origem
+0 - Nacional
+1 - Estrangeira (Importada)
+2 - Estrangeira (Merc. Interno)
+
+CST / CSOSN ICMS
+00 - Tributada Integralmente
+40 - Isenta
+60 - Cobrada por ST
+102 - Simples Nacional
+
+Alíquota ICMS (%)
+CST PIS / COFINS
+01 - Alíquota Básica
+04 - Monofásica
+06 - Alíquota Zero
+49 - Simples Nacional
+
+IBS / CBS (Reforma Tributária)
+CST 000 / cClassTrib 000001 - Tributação Integral (1%)
+CST 200 / cClassTrib 200001 - Alíquota Zero (Cesta Básica)
+CST 400 / cClassTrib 400001 - Isenção Legal
+
+Preço Venda (R$) *
+Qtd Estoque *
+ Cadastrar Produto
+
+
+
+Contas a Receber
+Entradas de vendas, notas fiscais e recebimentos futuros
+
+ Lançar Recebimento
+
+
+
+Contas a Pagar
+Despesas, fornecedores, boletos e impostos a pagar
+
+ Lançar Conta a Pagar
+
+
+
+Configurações da Empresa & Certificado
+Defina seu regime tributário (Lucro Real, Presumido ou Simples) e certificado digital
+
+Seu CNPJ (Busca Automática)
+
+
+
+
+Razão Social da Sua Empresa
+Inscrição Estadual (IE)
+Regime Tributário Obrigatório
+Lucro Presumido (PIS 0,65% • COFINS 3,00% • IBS/CBS 1%)
+Lucro Real (PIS 1,65% • COFINS 7,60% • IBS/CBS 1%)
+Simples Nacional / MEI (Dispensa IBS/CBS em 2026)
+
+
+Certificado Digital A1 (.pfx) ou A3
+Senha do Certificado Digital
+ Salvar Configurações
+
+ Sincronizar Dados (Computador ↔ Celular Android)
+
+
+
+ Exportar Dados (.JSON)
+Importar Dados (.JSON)
+lucide.createIcons();
+let db = JSON.parse(localStorage.getItem('gestor_pro_erp_final')) || {
+config: { razao: 'MINHA EMPRESA LTDA', cnpj: '00.000.000/0001-91', ie: 'ISENTO', regime: 'PRESUMIDO' },
+clientes: [],
+produtos: [],
+financeiro: [],
+notas: []
+};
+let carrinhoNFe = [];
+let html5QrCode = null;
+let modoScannerAtual = 'CADASTRO';
+function salvarDB() {
+localStorage.setItem('gestor_pro_erp_final', JSON.stringify(db));
+renderizarTudo();
+}
+function mostrarToast(msg, erro = false) {
+const t = document.getElementById('toast');
+t.textContent = msg;
+t.className = fixed top-5 right-5 z-50 px-5 py-3.5 rounded-2xl text-white font-semibold shadow-2xl ${erro ? 'bg-rose-600' : 'bg-emerald-600'};
+t.classList.remove('hidden');
+setTimeout(() => t.classList.add('hidden'), 3500);
+}
+function mudarAba(nome) {
+document.querySelectorAll('.aba-conteudo').forEach(el => el.classList.add('hidden'));
+document.getElementById('aba-' + nome).classList.remove('hidden');
+document.querySelectorAll('.nav-btn').forEach(btn => {
+btn.classList.remove('bg-indigo-600', 'text-white', 'font-semibold');
+btn.classList.add('text-indigo-200');
+});
+const ativo = document.getElementById('nav-' + nome);
+ativo.classList.add('bg-indigo-600', 'text-white', 'font-semibold');
+ativo.classList.remove('text-indigo-200');
+}
+//
+=========================================================================
+// LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA
+// =========================================================================
+function abrirScanner(modo) {
+modoScannerAtual = modo;
+document.getElementById('modal-scanner').classList.remove('hidden');
+html5QrCode = new Html5Qrcode("leitor-camera-box");
+html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 140 } }, (codigo) => {
+try {
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const osc = ctx.createOscillator();
+osc.frequency.setValueAtTime(880, ctx.currentTime);
+osc.connect(ctx.destination);
+osc.start();
+osc.stop(ctx.currentTime + 0.12);
+} catch {}
+fecharScanner();
+if (modoScannerAtual === 'CADASTRO') {
+document.getElementById('prod-ean').value = codigo;
+mostrarToast(Código lido: ${codigo});
+} else {
+const prod = db.produtos.find(p => p.ean === codigo);
+if (!prod) return mostrarToast(Código ${codigo} não encontrado no estoque!, true);
+const existente = carrinhoNFe.find(i => i.produto.id === prod.id);
+if (existente) {
+if (prod.estoque < existente.qtd + 1) return mostrarToast('Estoque insuficiente!', true);
+existente.qtd += 1;
+existente.subtotal = +(existente.produto.preco * existente.qtd - existente.desconto).toFixed(2);
+existente.trib = calcularImpostosItem(existente.produto, existente.subtotal);
+recalcularTotaisNota();
+mostrarToast(+1 ${prod.desc} adicionado!);
+} else {
+document.getElementById('nfe-produto').value = prod.id;
+document.getElementById('nfe-qtd').value = '1';
+adicionarItemNota();
+}
+}
+}).catch(() => {
+fecharScanner();
+mostrarToast("Não foi possível acessar a câmera (verifique permissão HTTPS).", true);
+});
+}
+function fecharScanner() {
+document.getElementById('modal-scanner').classList.add('hidden');
+if (html5QrCode) {
+html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
+html5QrCode = null;
+}
+}
+// =========================================================================
+// CONSULTA CNPJ, VALIDAÇÃO CPF E BUSCA DE CEP
+// =========================================================================
+function validarCPF(cpf) {
+cpf = cpf.replace(/\D/g, '');
+if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+let soma = 0, resto;
+for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+resto = (soma * 10) % 11;
+if (resto === 10 || resto === 11) resto = 0;
+if (resto !== parseInt(cpf.substring(9, 10))) return false;
+soma = 0;
+for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+resto = (soma * 10) % 11;
+if (resto === 10 || resto === 11) resto = 0;
+return resto === parseInt(cpf.substring(10, 11));
+}
+async function consultarDocumentoCliente() {
+const input = document.getElementById('cli-doc');
+const status = document.getElementById('status-doc-cli');
+const docLimpo = input.value.replace(/\D/g, '');
+if (!docLimpo) { status.textContent = ''; return; }
+if (docLimpo.length === 11) {
+if (validarCPF(docLimpo)) {
+input.value = docLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+status.textContent = '✓ CPF Válido';
+status.className = 'text-xs mt-1 block text-emerald-600 font-bold';
+document.getElementById('cli-ind-ie').value = '9';
+} else {
+status.textContent = '✕ CPF Inválido';
+status.className = 'text-xs mt-1 block text-rose-600 font-bold';
+mostrarToast('CPF inválido!', true);
+}
+return;
+}
+if (docLimpo.length === 14) {
+input.value = docLimpo.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+status.textContent = 'Consultando CNPJ...';
+status.className = 'text-xs mt-1 block text-cyan-600 font-bold';
+try {
+const resp = await fetch(https://brasilapi.com.br{docLimpo});
+if (!resp.ok) throw new Error();
+const d = await resp.json();
+document.getElementById('cli-nome').value = d.razao_social || d.nome_fantasia || '';
+document.getElementById('cli-tel').value = d.ddd_telefone_1 || '';
+document.getElementById('cli-cep').value = d.cep || '';
+document.getElementById('cli-rua').value = d.logradouro || '';
+document.getElementById('cli-num').value = d.numero || '';
+document.getElementById('cli-bairro').value = d.bairro || '';
+document.getElementById('cli-cidade').value = d.municipio || '';
+document.getElementById('cli-uf').value = d.uf || '';
+document.getElementById('cli-ind-ie').value = '1';
+status.textContent = '✓ CNPJ Encontrado';
+status.className = 'text-xs mt-1 block text-emerald-600 font-bold';
+mostrarToast('Dados preenchidos pelo CNPJ!');
+} catch {
+status.textContent = '✕ CNPJ não encontrado';
+status.className = 'text-xs mt-1 block text-rose-600 font-bold';
+}
+}
+}
+async function consultarCEPCliente() {
+const cepInput = document.getElementById('cli-cep');
+const cepLimpo = cepInput.value.replace(/\D/g, '');
+if (cepLimpo.length !== 8) return;
+cepInput.value = cepLimpo.replace(/(\d{5})(\d{3})/, '$1-$2');
+try {
+const resp = await fetch(https://viacep.com.br{cepLimpo}/json/);
+const d = await resp.json();
+if (d.erro) return mostrarToast('CEP não encontrado!', true);
+document.getElementById('cli-rua').value = d.logradouro || '';
+document.getElementById('cli-bairro').value = d.bairro || '';
+document.getElementById('cli-cidade').value = d.localidade || '';
+document.getElementById('cli-uf').value = d.uf || '';
+document.getElementById('cli-num').focus();
+mostrarToast('Endereço preenchido!');
+} catch {}
+}
+async function consultarCNPJEmitente() {
+const cnpjLimpo = document.getElementById('cfg-cnpj').value.replace(/\D/g, '');
+if (cnpjLimpo.length !== 14) return;
+try {
+const resp = await fetch(https://brasilapi.com.br{cnpjLimpo});
+if (!resp.ok) throw new Error();
+const d = await resp.json();
+document.getElementById('cfg-cnpj').value = cnpjLimpo.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+document.getElementById('cfg-razao').value = d.razao_social || '';
+mostrarToast('Empresa encontrada!');
+} catch {}
+}
+// =========================================================================
+// CRUD CLIENTES, PRODUTOS E FINANCEIRO
+// =========================================================================
+function salvarCliente() {
+const nome = document.getElementById('cli-nome').value.trim();
+const doc = document.getElementById('cli-doc').value.trim();
+if (!nome || !doc) return mostrarToast('Preencha Nome e CPF/CNPJ!', true);
+const rua = document.getElementById('cli-rua').value.trim();
+const num = document.getElementById('cli-num').value.trim();
+const bairro = document.getElementById('cli-bairro').value.trim();
+db.clientes.push({
+id: Date.now().toString(),
+nome, doc,
+indIE: document.getElementById('cli-ind-ie').value,
+ie: document.getElementById('cli-ie').value.trim(),
+tel: document.getElementById('cli-tel').value.trim(),
+cep: document.getElementById('cli-cep').value.trim(),
+end: [rua, num, bairro].filter(Boolean).join(', '),
+cidade: document.getElementById('cli-cidade').value.trim(),
+uf: document.getElementById('cli-uf').value.trim().toUpperCase()
+});
+['cli-nome', 'cli-doc', 'cli-ie', 'cli-tel', 'cli-cep', 'cli-rua', 'cli-num', 'cli-bairro', 'cli-cidade', 'cli-uf'].forEach(id => document.getElementById(id).value = '');
+document.getElementById('status-doc-cli').textContent = '';
+salvarDB();
+mostrarToast('Cliente salvo!');
+}
+function excluirItem(colecao, id) {
+db[colecao] = db[colecao].filter(item => item.id !== id);
+salvarDB();
+mostrarToast('Registro removido.');
+}
+function salvarProduto() {
+const desc = document.getElementById('prod-desc').value.trim();
+const ncm = document.getElementById('prod-ncm').value.trim();
+const preco = parseFloat(document.getElementById('prod-preco').value);
+const qtd = parseInt(document.getElementById('prod-qtd').value);
+if (!desc || !ncm || isNaN(preco) || isNaN(qtd)) return mostrarToast('Preencha Descrição, NCM, Preço e Estoque!', true);
+const [cstIbs, cClassTrib] = document.getElementById('prod-ibscbs-combo').value.split('|');
+db.produtos.push({
+id: Date.now().toString(),
+ean: document.getElementById('prod-ean').value.trim() || 'SEM GTIN',
+desc, ncm,
+origem: document.getElementById('prod-origem').value,
+cstIcms: document.getElementById('prod-cst-icms').value,
+aliqIcms: parseFloat(document.getElementById('prod-aliq-icms').value) || 0,
+cstPis: document.getElementById('prod-cst-pis').value,
+cstIbs, cClassTrib, preco, estoque: qtd
+});
+['prod-ean', 'prod-desc', 'prod-ncm', 'prod-preco', 'prod-qtd'].forEach(id => document.getElementById(id).value = '');
+salvarDB();
+mostrarToast('Produto cadastrado!');
+}
+function salvarFinanceiro(tipo) {
+const prefix = tipo === 'RECEBER' ? 'rec' : 'pag';
+const desc = document.getElementById(${prefix}-desc).value.trim();
+const valor = parseFloat(document.getElementById(${prefix}-valor).value);
+const venc = document.getElementById(${prefix}-venc).value || new Date().toISOString().split('T')[0];
+if (!desc || isNaN(valor)) return mostrarToast('Informe descrição e valor!', true);
+db.financeiro.push({ id: Date.now().toString(), tipo, desc, valor, venc, status: 'PENDENTE' });
+document.getElementById(${prefix}-desc).value = '';
+document.getElementById(${prefix}-valor).value = '';
+salvarDB();
+mostrarToast(tipo === 'RECEBER' ? 'Recebimento lançado!' : 'Conta a pagar lançada!');
+}
+function baixarConta(id) {
+const item = db.financeiro.find(f => f.id === id);
+if (item) item.status = 'PAGO';
+salvarDB();
+mostrarToast('Baixa efetuada com sucesso!');
+}
+// =========================================================================
+// MOTOR FISCAL E EMISSÃO DE NF-E
+// =========================================================================
+function calcularImpostosItem(produto, valor) {
+const regime = db.config.regime;
+let vICMS = 0;
+if (regime !== 'SIMPLES' && ['00', '20'].includes(produto.cstIcms)) {
+vICMS = +(valor * (produto.aliqIcms / 100)).toFixed(2);
+}
+let pPIS = 0, pCOFINS = 0, vPIS = 0, vCOFINS = 0;
+if (regime !== 'SIMPLES' && produto.cstPis === '01') {
+pPIS = regime === 'REAL' ? 1.65 : 0.65;
+pCOFINS = regime === 'REAL' ? 7.60 : 3.00;
+vPIS = +(valor * (pPIS / 100)).toFixed(2);
+vCOFINS = +(valor * (pCOFINS / 100)).toFixed(2);
+}
+let pCBS = 0, vCBS = 0, pIBS = 0, vIBS = 0;
+if (regime !== 'SIMPLES' && produto.cstIbs === '000') {
+pCBS = 0.90;
+pIBS = 0.10;
+vCBS = +(valor * 0.009).toFixed(2);
+vIBS = +(valor * 0.001).toFixed(2);
+}
+return { vICMS, pPIS, vPIS, pCOFINS, vCOFINS, pCBS, vCBS, pIBS, vIBS };
+}
+function adicionarItemNota() {
+const prodId = document.getElementById('nfe-produto').value;
+const qtd = parseInt(document.getElementById('nfe-qtd').value) || 0;
+const desconto = parseFloat(document.getElementById('nfe-desc-item').value) || 0;
+const prod = db.produtos.find(p => p.id === prodId);
+if (!prod) return mostrarToast('Cadastre um produto primeiro!', true);
+if (qtd <= 0) return mostrarToast('Quantidade inválida!', true);
+if (prod.estoque < qtd) return mostrarToast(Estoque insuficiente (${prod.estoque} disp.), true);
+const subtotal = +(prod.preco * qtd - desconto).toFixed(2);
+if (subtotal <= 0) return mostrarToast('Desconto maior que o valor do produto!', true);
+carrinhoNFe.push({
+produto: { ...prod }, qtd, desconto, subtotal,
+trib: calcularImpostosItem(prod, subtotal)
+});
+document.getElementById('nfe-qtd').value = '1';
+document.getElementById('nfe-desc-item').value = '0';
+recalcularTotaisNota();
+}
+function removerItemNota(idx) {
+carrinhoNFe.splice(idx, 1);
+recalcularTotaisNota();
+}
+function recalcularTotaisNota() {
+const frete = parseFloat(document.getElementById('nfe-frete').value) || 0;
+let totalProdutos = 0, totICMS = 0, totPIS = 0, totCOFINS = 0, totCBS = 0, totIBS = 0;
+document.getElementById('nfe-carrinho-lista').innerHTML = carrinhoNFe.map((item, idx) => {
+totalProdutos += item.subtotal;
+totICMS += item.trib.vICMS;
+totPIS += item.trib.vPIS;
+totCOFINS += item.trib.vCOFINS;
+totCBS += item.trib.vCBS;
+totIBS += item.trib.vIBS;
+return <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center text-sm shadow-sm"> <div> <strong class="text-slate-800">${item.qtd}x ${item.produto.desc}</strong> <span class="text-xs text-slate-500 block">NCM: ${item.produto.ncm} • ICMS: ${item.produto.cstIcms} • IBS/CBS: ${item.produto.cstIbs}</span> </div> <div class="flex items-center gap-3"> <strong class="text-sky-700">R$ ${item.subtotal.toFixed(2)}</strong> <button onclick="removerItemNota(${idx})" class="bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg px-2.5 py-1 font-bold">✕</button> </div> </div>;
+}).join('');
+const totalNota = +(totalProdutos + frete).toFixed(2);
+document.getElementById('lbl-pis').textContent = db.config.regime === 'REAL' ? 'PIS (1,65%)' : db.config.regime === 'PRESUMIDO' ? 'PIS (0,65%)' : 'PIS';
+document.getElementById('lbl-cofins').textContent = db.config.regime === 'REAL' ? 'COFINS (7,60%)' : db.config.regime === 'PRESUMIDO' ? 'COFINS (3,00%)' : 'COFINS';
+document.getElementById('prev-icms').textContent = R$ ${totICMS.toFixed(2).replace('.', ',')};
+document.getElementById('prev-pis').textContent = R$ ${totPIS.toFixed(2).replace('.', ',')};
+document.getElementById('prev-cofins').textContent = R$ ${totCOFINS.toFixed(2).replace('.', ',')};
+document.getElementById('prev-cbs').textContent = R$ ${totCBS.toFixed(2).replace('.', ',')};
+document.getElementById('prev-ibs').textContent = R$ ${totIBS.toFixed(2).replace('.', ',')};
+document.getElementById('nfe-total-preview').textContent = Total da NF-e: R$ ${totalNota.toFixed(2).replace('.', ',')};
+return { totalProdutos, frete, totalNota, totICMS, totPIS, totCOFINS, totCBS, totIBS };
+}
+function emitirNFe() {
+const cliId = document.getElementById('nfe-cliente').value;
+const cliente = db.clientes.find(c => c.id === cliId);
+if (!cliente) return mostrarToast('Cadastre e selecione um cliente!', true);
+if (carrinhoNFe.length === 0) return mostrarToast('Adicione pelo menos 1 produto na nota!', true);
+const totais = recalcularTotaisNota();
+const numero = Math.floor(1000 + Math.random() * 9000);
+const chave = '352611' + Array.from({ length: 38 }, () => Math.floor(Math.random() * 10)).join('');
+const dataEmissao = new Date().toLocaleString('pt-BR');
+const cfop = document.getElementById('nfe-cfop').value;
+const modFrete = document.getElementById('nfe-mod-frete').value;
+const obs = document.getElementById('nfe-obs').value.trim();
+carrinhoNFe.forEach(item => {
+const prodOrig = db.produtos.find(p => p.id === item.produto.id);
+if (prodOrig) prodOrig.estoque -= item.qtd;
+});
+db.financeiro.push({
+id: Date.now().toString(),
+tipo: 'RECEBER',
+desc: NF-e #${numero} - ${cliente.nome},
+valor: totais.totalNota,
+venc: new Date().toISOString().split('T')[0],
+status: 'PENDENTE'
+});
+const notaObj = {
+numero, chave, cliente, itens: [...carrinhoNFe], totais,
+cfop, modFrete, obs, regime: db.config.regime, dataEmissao
+};
+db.notas.unshift(notaObj);
+carrinhoNFe = [];
+document.getElementById('nfe-frete').value = '0';
+document.getElementById('nfe-obs').value = '';
+salvarDB();
+gerarPDFDanfe(notaObj);
+mostrarToast(NF-e #${numero} emitida com sucesso!);
+}
+function baixarXMLNFe(nota) {
+const crt = nota.regime === 'SIMPLES' ? '1' : '3';
+const docLimpo = nota.cliente.doc.replace(/\D/g, '');
+const tagDoc = docLimpo.length === 11 ? <CPF>${docLimpo}</CPF> : <CNPJ>${docLimpo}</CNPJ>;
+const itensXML = nota.itens.map((it, idx) =>  <det nItem="${idx + 1}"> <prod> <cProd>${it.produto.id}</cProd> <cEAN>${it.produto.ean}</cEAN> <xProd>${it.produto.desc}</xProd> <NCM>${it.produto.ncm}</NCM> <CFOP>${nota.cfop}</CFOP> <uCom>UN</uCom> <qCom>${it.qtd.toFixed(4)}</qCom> <vUnCom>${it.produto.preco.toFixed(2)}</vUnCom> <vProd>${(it.produto.preco * it.qtd).toFixed(2)}</vProd> </prod> <imposto> <ICMS><ICMS00><orig>${it.produto.origem}</orig><CST>${it.produto.cstIcms}</CST><vBC>${it.subtotal.toFixed(2)}</vBC><pICMS>${it.produto.aliqIcms.toFixed(2)}</pICMS><vICMS>${it.trib.vICMS.toFixed(2)}</vICMS></ICMS00></ICMS> <PIS><PISAliq><CST>${it.produto.cstPis}</CST><vBC>${it.subtotal.toFixed(2)}</vBC><pPIS>${it.trib.pPIS.toFixed(2)}</pPIS><vPIS>${it.trib.vPIS.toFixed(2)}</vPIS></PISAliq></PIS> <COFINS><COFINSAliq><CST>${it.produto.cstPis}</CST><vBC>${it.subtotal.toFixed(2)}</vBC><pCOFINS>${it.trib.pCOFINS.toFixed(2)}</pCOFINS><vCOFINS>${it.trib.vCOFINS.toFixed(2)}</vCOFINS></COFINSAliq></COFINS> <IBSCBS> <CST>${it.produto.cstIbs}</CST> <cClassTrib>${it.produto.cClassTrib}</cClassTrib> <gIBSCBS> <vBC>${it.subtotal.toFixed(2)}</vBC> <gIBSUF><pIBSUF>${it.trib.pIBS.toFixed(4)}</pIBSUF><vIBSUF>${it.trib.vIBS.toFixed(2)}</vIBSUF></gIBSUF> <gCBS><pCBS>${it.trib.pCBS.toFixed(4)}</pCBS><vCBS>${it.trib.vCBS.toFixed(2)}</vCBS></gCBS> </gIBSCBS> </IBSCBS> </imposto> </det>).join('');
+const xml = <?xml version="1.0" encoding="UTF-8"?> <nfeProc versao="4.00" xmlns="http://portalfiscal.inf.br"> <NFe> <infNFe Id="NFe${nota.chave}" versao="4.00"> <ide><cUF>35</cUF><natOp>VENDA DE MERCADORIA</natOp><mod>55</mod><serie>1</serie><nNF>${nota.numero}</nNF><dhEmi>${new Date().toISOString()}</dhEmi><tpNF>1</tpNF></ide> <emit><CNPJ>${db.config.cnpj.replace(/\D/g, '')}</CNPJ><xNome>${db.config.razao}</xNome><IE>${db.config.ie}</IE><CRT>${crt}</CRT></emit> <dest>${tagDoc}<xNome>${nota.cliente.nome}</xNome><indIEDest>${nota.cliente.indIE || '9'}</indIEDest></dest> ${itensXML} <total> <ICMSTot><vBC>${nota.totais.totalProdutos.toFixed(2)}</vBC><vICMS>${nota.totais.totICMS.toFixed(2)}</vICMS><vProd>${nota.totais.totalProdutos.toFixed(2)}</vProd><vFrete>${nota.totais.frete.toFixed(2)}</vFrete><vPIS>${nota.totais.totPIS.toFixed(2)}</vPIS><vCOFINS>${nota.totais.totCOFINS.toFixed(2)}</vCOFINS><vNF>${nota.totais.totalNota.toFixed(2)}</vNF></ICMSTot> <IBSCBSTot><vBCIBSCBS>${nota.totais.totalProdutos.toFixed(2)}</vBCIBSCBS><gIBS><vIBS>${nota.totais.totIBS.toFixed(2)}</vIBS></gIBS><gCBS><vCBS>${nota.totais.totCBS.toFixed(2)}</vCBS></gCBS></IBSCBSTot> </total> </infNFe> </NFe> </nfeProc>;
 const blob = new Blob([xml], { type: 'application/xml' });
 const url = URL.createObjectURL(blob);
 const a = document.createElement('a');
 a.href = url;
-a.download = NFe_\({nota.chave}.xml; a.click(); }  function gerarPDFDanfe(nota) { const { jsPDF } = window.jspdf; const doc = new jsPDF(); const nomeRegime = nota.regime === 'REAL' ? 'Lucro Real' : nota.regime === 'PRESUMIDO' ? 'Lucro Presumido' : 'Simples Nacional';  doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.text('DANFE - DOCUMENTO AUXILIAR DA NOTA FISCAL ELETRÔNICA', 105, 13, { align: 'center' });  doc.setFontSize(8.5); doc.setFont(undefined, 'normal'); doc.rect(10, 18, 190, 22); doc.text(EMITENTE: \){db.config.razao}   |   CNPJ: db.config.cnpj | IE: {db.config.ie}, 14, 24);
-doc.text(REGIME TRIBUTÁRIO: nomeRegime | CFOP: {nota.cfop}, 14, 30);
-doc.text(NF-e Nº: nota.numero | SÉRIE: 1 | EMISSÃO: {nota.dataEmissao}, 14, 36);
+a.download = NFe_${nota.chave}.xml;
+a.click();
+}
+function gerarPDFDanfe(nota) {
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF();
+const nomeRegime = nota.regime === 'REAL' ? 'Lucro Real' : nota.regime === 'PRESUMIDO' ? 'Lucro Presumido' : 'Simples Nacional';
+doc.setFontSize(12);
+doc.setFont(undefined, 'bold');
+doc.text('DANFE - DOCUMENTO AUXILIAR DA NOTA FISCAL ELETRÔNICA', 105, 13, { align: 'center' });
+doc.setFontSize(8.5);
+doc.setFont(undefined, 'normal');
+doc.rect(10, 18, 190, 22);
+doc.text(EMITENTE: ${db.config.razao}   |   CNPJ: ${db.config.cnpj}   |   IE: ${db.config.ie}, 14, 24);
+doc.text(REGIME: ${nomeRegime}   |   CFOP: ${nota.cfop}, 14, 30);
+doc.text(NF-e Nº: ${nota.numero}   |   SÉRIE: 1   |   EMISSÃO: ${nota.dataEmissao}, 14, 36);
 doc.rect(10, 42, 190, 14);
 doc.setFont(undefined, 'bold');
-doc.text(CHAVE DE ACESSO: \${nota.chave}, 14, 50);
+doc.text(CHAVE DE ACESSO: ${nota.chave}, 14, 50);
 doc.rect(10, 58, 190, 22);
 doc.text('DESTINATÁRIO / REMETENTE:', 14, 64);
 doc.setFont(undefined, 'normal');
-doc.text(Nome/Razão: nota.cliente.nome | CPF/CNPJ: {nota.cliente.doc}, 14, 70);
-doc.text(Endereço: nota.cliente.end || '-' | {nota.cliente.cidade || ''}/nota.cliente.uf || '' | CEP: {nota.cliente.cep || '-'}, 14, 76);
+doc.text(Nome/Razão: ${nota.cliente.nome}   |   CPF/CNPJ: ${nota.cliente.doc}, 14, 70);
+doc.text(Endereço: ${nota.cliente.end || '-'}   |   ${nota.cliente.cidade || ''}/${nota.cliente.uf || ''}   |   CEP: ${nota.cliente.cep || '-'}, 14, 76);
 doc.rect(10, 82, 190, 18);
 doc.setFont(undefined, 'bold');
 doc.text('CÁLCULO DO IMPOSTO (TRIBUTOS TRADICIONAIS):', 14, 88);
 doc.setFont(undefined, 'normal');
-doc.text(Base ICMS: R\$ \${nota.totais.totalProdutos.toFixed(2)}  |  Valor ICMS: R\$ \${nota.totais.totICMS.toFixed(2)}  |  PIS: R\$ \${nota.totais.totPIS.toFixed(2)}  |  COFINS: R\$ \${nota.totais.totCOFINS.toFixed(2)}  |  Frete: R\$ \${nota.totais.frete.toFixed(2)}, 14, 95);
+doc.text(Base ICMS: R$ ${nota.totais.totalProdutos.toFixed(2)}  |  ICMS: R$ ${nota.totais.totICMS.toFixed(2)}  |  PIS: R$ ${nota.totais.totPIS.toFixed(2)}  |  COFINS: R$ ${nota.totais.totCOFINS.toFixed(2)}  |  Frete: R$ ${nota.totais.frete.toFixed(2)}, 14, 95);
 doc.rect(10, 102, 190, 18);
 doc.setFont(undefined, 'bold');
 doc.text('REFORMA TRIBUTÁRIA - IBS / CBS (EC 132/2023 • NT 2026.010):', 14, 108);
 doc.setFont(undefined, 'normal');
-doc.text(Base IBS/CBS: R\$ \({nota.totais.totalProdutos.toFixed(2)}   \vert{}   CBS (0,90\%): R\) \({nota.totais.totCBS.toFixed(2)}   \vert{}   IBS (0,10\%): R\) \({nota.totais.totIBS.toFixed(2)}, 14, 115);  let y = 128; doc.setFont(undefined, 'bold'); doc.text('ITENS DA NOTA FISCAL:', 10, y); y += 6; doc.setFont(undefined, 'normal'); nota.itens.forEach((it, idx) => { doc.text(\){idx + 1}. it.produto.desc (EAN: {it.produto.ean}) | NCM: it.produto.ncm | Qtd: {it.qtd} | Total: R\$ \${it.subtotal.toFixed(2)}, 10, y);
+doc.text(Base IBS/CBS: R$ ${nota.totais.totalProdutos.toFixed(2)}   |   CBS (0,90%): R$ ${nota.totais.totCBS.toFixed(2)}   |   IBS (0,10%): R$ ${nota.totais.totIBS.toFixed(2)}, 14, 115);
+let y = 128;
+doc.setFont(undefined, 'bold');
+doc.text('ITENS DA NOTA FISCAL:', 10, y);
+y += 6;
+doc.setFont(undefined, 'normal');
+nota.itens.forEach((it, idx) => {
+doc.text(${idx + 1}. ${it.produto.desc} | NCM: ${it.produto.ncm} | Qtd: ${it.qtd} | Unit: R$ ${it.produto.preco.toFixed(2)} | Total: R$ ${it.subtotal.toFixed(2)}, 10, y);
 y += 6;
 });
 y += 4;
 doc.setFont(undefined, 'bold');
 doc.setFontSize(10);
-doc.text(VALOR TOTAL DA NOTA FISCAL: R\$ \({nota.totais.totalNota.toFixed(2)}, 10, y);  if (nota.obs) { y += 8; doc.setFontSize(8.5); doc.setFont(undefined, 'normal'); doc.text(Observações: \){nota.obs}, 10, y);
+doc.text(VALOR TOTAL DA NOTA FISCAL: R$ ${nota.totais.totalNota.toFixed(2)}, 10, y);
+if (nota.obs) {
+y += 8;
+doc.setFontSize(8.5);
+doc.setFont(undefined, 'normal');
+doc.text(Observações: ${nota.obs}, 10, y);
 }
-doc.save(DANFE_NFe_\({nota.numero}.pdf); }  function salvarConfig() { const arq = document.getElementById('cfg-cert-arquivo').files; db.config = { razao: document.getElementById('cfg-razao').value \vert{}\vert{} 'MINHA EMPRESA LTDA', cnpj: document.getElementById('cfg-cnpj').value \vert{}\vert{} '00.000.000/0001-91', ie: document.getElementById('cfg-ie').value \vert{}\vert{} 'ISENTO', regime: document.getElementById('cfg-regime').value, certNome: arq ? arq.name : db.config.certNome }; salvarDB(); mostrarToast('Configurações fiscais atualizadas!'); }  function exportarBackup() { const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = backup_erp_\){new Date().toISOString().slice(0, 10)}.json;
+doc.save(DANFE_NFe_${nota.numero}.pdf);
+}
+// =========================================================================
+// CONFIGURAÇÕES E BACKUP
+// =========================================================================
+function salvarConfig() {
+db.config = {
+razao: document.getElementById('cfg-razao').value || 'MINHA EMPRESA LTDA',
+cnpj: document.getElementById('cfg-cnpj').value || '00.000.000/0001-91',
+ie: document.getElementById('cfg-ie').value || 'ISENTO',
+regime: document.getElementById('cfg-regime').value
+};
+salvarDB();
+mostrarToast('Configurações salvas!');
+}
+function exportarBackup() {
+const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = backup_erp_${new Date().toISOString().slice(0, 10)}.json;
 a.click();
 }
 function importarBackup(event) {
-const file = event.target.files;
+const file = event.target.files[0];
 if (!file) return;
 const reader = new FileReader();
 reader.onload = e => {
 try {
 db = JSON.parse(e.target.result);
 salvarDB();
-mostrarToast('Backup restaurado!');
+mostrarToast('Dados importados com sucesso!');
 } catch {
-mostrarToast('Arquivo inválido.', true);
+mostrarToast('Arquivo inválido!', true);
 }
 };
 reader.readAsText(file);
 }
+// =========================================================================
+// RENDERIZAÇÃO COMPLETA DA INTERFACE
+// =========================================================================
 function renderizarTudo() {
+document.getElementById('dash-empresa-nome').textContent = db.config.razao || 'Painel de Controle';
 const mapRegime = {
-REAL: 'Regime: Lucro Real (PIS 1,65% • COFINS 7,60% • IBS/CBS 1%)',
-PRESUMIDO: 'Regime: Lucro Presumido (PIS 0,65% • COFINS 3,00% • IBS/CBS 1%)',
-SIMPLES: 'Regime: Simples Nacional (CRT 1 • Dispensa IBS/CBS em 2026)'
+REAL: 'Lucro Real • PIS 1,65% | COFINS 7,60% | IBS/CBS 1%',
+PRESUMIDO: 'Lucro Presumido • PIS 0,65% | COFINS 3,00% | IBS/CBS 1%',
+SIMPLES: 'Simples Nacional • CRT 1 (Dispensa IBS/CBS em 2026)'
 };
 document.getElementById('badge-regime').textContent = mapRegime[db.config.regime] || mapRegime.PRESUMIDO;
-const rec = db.financeiro.filter(f => f.tipo === 'RECEBER').reduce((acc, f) => acc + f.valor, 0);
-const pag = db.financeiro.filter(f => f.tipo === 'PAGAR').reduce((acc, f) => acc + f.valor, 0);
-document.getElementById('kpi-receber').textContent = R\$ \${rec.toFixed(2).replace('.', ',')};
-document.getElementById('kpi-pagar').textContent = R\$ \${pag.toFixed(2).replace('.', ',')};
+// KPIs
+const rec = db.financeiro.filter(f => f.tipo === 'RECEBER' && f.status === 'PENDENTE').reduce((acc, f) => acc + f.valor, 0);
+const pag = db.financeiro.filter(f => f.tipo === 'PAGAR' && f.status === 'PENDENTE').reduce((acc, f) => acc + f.valor, 0);
+document.getElementById('kpi-receber').textContent = R$ ${rec.toFixed(2).replace('.', ',')};
+document.getElementById('kpi-pagar').textContent = R$ ${pag.toFixed(2).replace('.', ',')};
 document.getElementById('kpi-clientes').textContent = db.clientes.length;
 document.getElementById('kpi-produtos').textContent = db.produtos.length;
-document.getElementById('nfe-cliente').innerHTML = db.clientes.map(c => <option value="\${c.id}">c.nome ({c.doc})</option>).join('');
-document.getElementById('nfe-produto').innerHTML = db.produtos.map(p => <option value="\${p.id}">p.desc - R p.preco.toFixed(2) (Est: {p.estoque})</option>).join('');
+// Dropdowns NF-e
+document.getElementById('nfe-cliente').innerHTML = db.clientes.length
+? db.clientes.map(c => <option value="${c.id}">${c.nome} (${c.doc})</option>).join('')
+: 'Cadastre um cliente na aba Clientes primeiro';
+document.getElementById('nfe-produto').innerHTML = db.produtos.length
+? db.produtos.map(p => <option value="${p.id}">${p.desc} — R$ ${p.preco.toFixed(2)} (Estoque: ${p.estoque})</option>).join('')
+: 'Cadastre um produto na aba Estoque primeiro';
 recalcularTotaisNota();
-document.getElementById('lista-clientes').innerHTML = db.clientes.map(c => `
-`).join('');
-document.getElementById('lista-produtos').innerHTML = db.produtos.map(p => `
-`).join('');
-document.getElementById('lista-financeiro').innerHTML = db.financeiro.map(f => `
-`).join('');
-document.getElementById('lista-notas').innerHTML = db.notas.map((n, idx) => `
-`).join('');
+// Lista Clientes
+document.getElementById('lista-clientes').innerHTML = db.clientes.map(c => <div class="bg-white p-4 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm"> <div> <p class="font-bold text-slate-800">${c.nome}</p> <p class="text-xs text-slate-500 mt-0.5">Doc: <strong>${c.doc}</strong> • Tel: ${c.tel || '-'} • ${c.cidade || '-'}/${c.uf || '-'}</p> </div> <button onclick="excluirItem('clientes', '${c.id}')" class="text-rose-500 hover:bg-rose-50 p-2 rounded-xl" title="Excluir">✕</button> </div>).join('');
+// Lista Produtos
+document.getElementById('lista-produtos').innerHTML = db.produtos.map(p => <div class="bg-white p-4 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm"> <div> <p class="font-bold text-slate-800">${p.desc}</p> <p class="text-xs text-slate-500 mt-0.5">EAN: ${p.ean} • NCM: ${p.ncm} • ICMS: ${p.cstIcms} (${p.aliqIcms}%) • IBS/CBS: ${p.cstIbs}</p> <p class="text-sm font-extrabold text-amber-600 mt-1">R$ ${p.preco.toFixed(2)}</p> </div> <div class="flex items-center gap-3"> <span class="px-3 py-1 rounded-full text-xs font-bold text-white ${p.estoque <= 3 ? 'bg-rose-600' : 'bg-emerald-600'}"> ${p.estoque} un. </span> <button onclick="excluirItem('produtos', '${p.id}')" class="text-rose-500 hover:bg-rose-50 p-2 rounded-xl" title="Excluir">✕</button> </div> </div>).join('');
+// Lista Contas a Receber
+document.getElementById('lista-receber').innerHTML = db.financeiro.filter(f => f.tipo === 'RECEBER').map(f => <div class="bg-white p-4 rounded-2xl border-l-4 border-emerald-500 shadow-sm flex justify-between items-center"> <div> <p class="font-bold text-slate-800">${f.desc} — <span class="text-emerald-600">R$ ${f.valor.toFixed(2)}</span></p> <p class="text-xs text-slate-500">Vencimento: ${f.venc} • Status: <strong>${f.status}</strong></p> </div> <div class="flex items-center gap-2"> ${f.status === 'PENDENTE' ?Receber / Baixar:RECEBIDO} <button onclick="excluirItem('financeiro', '${f.id}')" class="text-slate-400 hover:text-rose-600 p-2">✕</button> </div> </div>).join('');
+// Lista Contas a Pagar
+document.getElementById('lista-pagar').innerHTML = db.financeiro.filter(f => f.tipo === 'PAGAR').map(f => <div class="bg-white p-4 rounded-2xl border-l-4 border-rose-500 shadow-sm flex justify-between items-center"> <div> <p class="font-bold text-slate-800">${f.desc} — <span class="text-rose-600">R$ ${f.valor.toFixed(2)}</span></p> <p class="text-xs text-slate-500">Vencimento: ${f.venc} • Status: <strong>${f.status}</strong></p> </div> <div class="flex items-center gap-2"> ${f.status === 'PENDENTE' ?Pagar / Baixar:PAGO} <button onclick="excluirItem('financeiro', '${f.id}')" class="text-slate-400 hover:text-rose-600 p-2">✕</button> </div> </div>).join('');
+// Lista Notas Fiscais
+document.getElementById('lista-notas').innerHTML = db.notas.map((n, idx) => <div class="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between sm:items-center gap-3 shadow-sm"> <div> <p class="font-bold text-slate-800">NF-e #${n.numero} — R$ ${n.totais.totalNota.toFixed(2)} (${n.cliente.nome})</p> <p class="text-xs text-slate-500">${n.dataEmissao} • CBS: R$ ${n.totais.totCBS.toFixed(2)} | IBS: R$ ${n.totais.totIBS.toFixed(2)}</p> <p class="text-[11px] text-slate-400 font-mono">Chave: ${n.chave}</p> </div> <div class="flex gap-2"> <button onclick='gerarPDFDanfe(db.notas[${idx}])' class="bg-sky-600 hover:bg-sky-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold"> PDF DANFE </button> <button onclick='baixarXMLNFe(db.notas[${idx}])' class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold"> XML SEFAZ </button> </div> </div>).join('');
+// Config
 document.getElementById('cfg-razao').value = db.config.razao || '';
 document.getElementById('cfg-cnpj').value = db.config.cnpj || '';
 document.getElementById('cfg-ie').value = db.config.ie || '';
 document.getElementById('cfg-regime').value = db.config.regime || 'PRESUMIDO';
+lucide.createIcons();
 }
-renderizarTudo();  
-
-
-```
+renderizarTudo();          
